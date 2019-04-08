@@ -1,8 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<congyou.Models.Blog>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h1>Index - List of Blogs</h1>
+
+<p>
+    <a asp-action="CreateBlog">Create New Blog</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            @*@<th>
+                @Html.DisplayNameFor(model => model.Content)
+            </th>*@
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                @*<td>
+                    @Html.DisplayFor(modelItem => item.Content)
+                </td>*@
+                <td>
+                    <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog</a> |
+                    <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
+                    <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
+                    <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
+                    <a asp-action="Comments" asp-route-id="@item.BlogId">View Comments</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
