@@ -38,22 +38,25 @@ namespace congyou
 			services.AddDbContext<ApplicationDbContext>(options =>
 					options.UseSqlServer(
 							Configuration.GetConnectionString("DefaultConnection")));
-			services.AddDefaultIdentity<IdentityUser>()
+			/*services.AddDefaultIdentity<IdentityUser>()
 					.AddDefaultUI(UIFramework.Bootstrap4)
-					.AddEntityFrameworkStores<ApplicationDbContext>();
+					.AddEntityFrameworkStores<ApplicationDbContext>();*/
+			services.AddIdentity<IdentityUser, IdentityRole>().AddDefaultUI(UIFramework.Bootstrap4)
+			.AddEntityFrameworkStores<ApplicationDbContext>().AddSignInManager<SignInManager<IdentityUser>>().AddDefaultTokenProviders();
 
+			services.AddSession();
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 			// These components support HttpContext.Session
 
-			services.AddMvc().AddCookieTempDataProvider();
+			/*services.AddMvc().AddCookieTempDataProvider();
 			services.AddDistributedMemoryCache();
 			services.AddSession(options =>
 			{
 				options.IdleTimeout = TimeSpan.FromMinutes(20);
 				options.Cookie.HttpOnly = false;
 				options.Cookie.IsEssential = true;
-			});
+			});*/
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using congyou.Models;
 using congyou.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace congyou.Controllers
 {
@@ -36,6 +37,7 @@ namespace congyou.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult CreateBlog(int id)
 		{
 			var model = new Blog();
