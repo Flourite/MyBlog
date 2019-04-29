@@ -28,12 +28,32 @@
     </dl>
 </div>
 <div>
-    <h4 style="margin-bottom: 10px;">Comments</h4>
-    @foreach (var lct in Model.Comments)
+    <h4 style="margin-bottom: 10px;">Photos(Click to view)</h4>
+    @foreach (var photo in Model.Photos)
+    {
+    <div style="padding:0px 25px; margin:0px;"> 
+        @*<a asp-action="DisplayPhoto" asp-route-id="@Html.Label(photo.id)">@Html.Label(photo.Name)</a>*@
+        
+        <img src="@Html.Label(photo.CompletePath)" />
+    </div>
+    }
+</div>
+<div>
+    <h4 style="margin-bottom: 10px;">Files(Click to download)</h4>
+    @foreach (var file in Model.Files)
     {
         <div style="padding:0px 25px; margin:0px;">
-            @Html.Label(lct.CommenterName) -
-            @Html.Label(lct.Content)
+            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.path)">@Html.Label(file.Name)</a>
+        </div>
+    }
+</div>
+<div>
+    <h4 style="margin-bottom: 10px;">Comments</h4>
+    @foreach (var cmt in Model.Comments)
+    {
+        <div style="padding:0px 25px; margin:0px;">
+            @Html.Label(cmt.CommenterName) -
+            @Html.Label(cmt.Content)
         </div>
     }
 </div>

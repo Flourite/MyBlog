@@ -1,0 +1,26 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model congyou.Models.Blog
+@{
+    ViewData["Title"] = "EditFiles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index - List of Files</h1>
+<p>
+    <a asp-action="UploadFile" asp-route-id="@Model.BlogId">Upload File</a>
+</p>
+<div>
+    <h4 style="margin-bottom: 10px;">Files(Click to download)</h4>
+    @foreach (var file in Model.Files)
+    {
+        <div style="padding:0px 25px; margin:0px;">
+            @Html.Label(file.Name) - 
+            <a asp-action="DeleteFile" asp-route-id="@Html.Label(file.id)">Delete</a>
+        </div>
+    }
+</div>
+<div>
+    <a asp-action="Index">Back to Blog List</a>
+</div>

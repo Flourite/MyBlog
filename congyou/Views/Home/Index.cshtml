@@ -8,9 +8,10 @@
 <h1>Index - List of Blogs</h1>
 @if (User.IsInRole("Admin"))
 {
-    <p>
-        <a asp-action="CreateBlog">Create New Blog</a>
-    </p>
+<p>
+    <a asp-action="CreateBlog">Create New Blog</a>
+    <a asp-action="PendingRequests">Requests</a>
+</p>
 }
 <table class="table">
         <thead>
@@ -36,15 +37,23 @@
         </td>*@
                 @if (User.IsInRole("Admin"))
                 {
-                    <td>
-                        <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog</a> |
-                        <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
-                        <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
-                        <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
-                        <a asp-action="Comments" asp-route-id="@item.BlogId">View Comments</a>
-                    </td>
+                <td>
+                    <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog(title & texts) </a> |
+                    <a asp-action="EditPhotos" asp-route-id="@item.BlogId">Edit Photos </a> |
+                    <a asp-action="EditFiles" asp-route-id="@item.BlogId">Edit Files </a> |
+                    <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
+                    <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
+                    <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
+                </td>
                 }
-                </tr>
+                @if (User.IsInRole("User"))
+                {
+                <td>
+                    <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
+                    <a asp-action="SendRequest" asp-route-id="@item.BlogId">Send Request</a> |
+                </td>
+                }
+            </tr>
             }
         </tbody>
     </table>
