@@ -33,7 +33,7 @@
     {
     <div style="padding:0px 25px; margin:0px;"> 
         @*<a asp-action="DisplayPhoto" asp-route-id="@Html.Label(photo.id)">@Html.Label(photo.Name)</a>*@
-        
+        @Html.Label(photo.Name) -
         <img src="@Html.Label(photo.CompletePath)" />
     </div>
     }
@@ -43,7 +43,7 @@
     @foreach (var file in Model.Files)
     {
         <div style="padding:0px 25px; margin:0px;">
-            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.path)">@Html.Label(file.Name)</a>
+            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.Path)">@Html.Label(file.Name)</a>
         </div>
     }
 </div>

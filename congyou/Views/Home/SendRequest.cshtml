@@ -14,7 +14,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.id)
+                @Html.DisplayNameFor(model => model.Id)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.BlogId)
@@ -27,15 +27,15 @@
         {
             <tr>
                 <td style="padding: 0.1em;">
-                    @Html.DisplayFor(modelItem => item.id)
+                    @Html.DisplayFor(modelItem => item.Id)
                 </td>
                 <td style="padding: 0.1em;">
                     @Html.DisplayFor(modelItem => item.BlogId)
                 </td>
                 <td style="padding: 0.1em;">
-                    <a asp-action="ApproveRequest" asp-route-id="@item.CommentId">Approve Request</a> |
+                    <a asp-action="ApproveRequest" asp-route-id="@item.Id">Approve Request</a> |
                     @*<a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |*@
-                    <a asp-action="IgnoreRequest" asp-route-id="@item.CommentId">Ignore Request</a>
+                    <a asp-action="IgnoreRequest" asp-route-id="@item.Id">Ignore Request</a>
                 </td>
             </tr>
         }

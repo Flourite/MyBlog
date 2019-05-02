@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
+    <Folder Include="wwwroot\FileStorage\Files\" />
+    <Folder Include="wwwroot\FileStorage\Photos\" />
   </ItemGroup>
 
 </Project>

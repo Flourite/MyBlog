@@ -17,7 +17,7 @@
     {
         <div style="padding:0px 25px; margin:0px;">
             @Html.Label(file.Name) - 
-            <a asp-action="DeleteFile" asp-route-id="@Html.Label(file.id)">Delete</a>
+            <a asp-action="DeleteFile" asp-route-id="@file.Id">Delete</a>
         </div>
     }
 </div>

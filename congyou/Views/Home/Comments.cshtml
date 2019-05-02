@@ -40,11 +40,11 @@
                 <td style="padding: 0.1em;">
                     @Html.DisplayFor(modelItem => item.Blog.Title)
                 </td>
-                <td style="padding: 0.1em;">
+                @*<td style="padding: 0.1em;">
                     <a asp-action="EditComment" asp-route-id="@item.CommentId">Edit Comment</a> |
-                    @*<a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |*@
+                    <a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |
                     <a asp-action="DeleteComment" asp-route-id="@item.CommentId">Delete Comment</a>
-                </td>
+                </td>*@
             </tr>
         }
     </tbody>

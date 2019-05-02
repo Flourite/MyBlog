@@ -17,7 +17,7 @@
     {
         <div style="padding:0px 25px; margin:0px;">
             @Html.Label(photo.Name) -
-            <a asp-action="DeletePhoto" asp-route-id="@Html.Label(photo.id)">Delete</a>
+            <a asp-action="DeletePhoto" asp-route-id="@photo.Id">Delete</a>
         </div>
     }
 </div>

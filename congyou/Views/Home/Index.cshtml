@@ -10,7 +10,7 @@
 {
 <p>
     <a asp-action="CreateBlog">Create New Blog</a>
-    <a asp-action="PendingRequests">Requests</a>
+    <a asp-action="SendRequests">Requests</a>
 </p>
 }
 <table class="table">
@@ -50,7 +50,7 @@
                 {
                 <td>
                     <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
-                    <a asp-action="SendRequest" asp-route-id="@item.BlogId">Send Request</a> |
+                    <a asp-action="PendingRequest" asp-route-id="@item.BlogId">Send Request</a> |
                 </td>
                 }
             </tr>

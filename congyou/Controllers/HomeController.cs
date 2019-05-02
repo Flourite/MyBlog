@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using congyou.Models;
 using congyou.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace congyou.Controllers
 {
@@ -16,15 +19,26 @@ namespace congyou.Controllers
 	{
 		private readonly ApplicationDbContext context_;
 		private const string sessionId_ = "SessionId";
+		private readonly IHostingEnvironment hostingEnvironment_;
+		private string webRootPath = null;
+		private string filePath = null;
+		private string photoPath = null;
+		private string otherPath = null;
 
-		public HomeController(ApplicationDbContext context)
+		public HomeController(ApplicationDbContext context, IHostingEnvironment hostingEnvironment)
 		{
+			hostingEnvironment_ = hostingEnvironment;
+			webRootPath = hostingEnvironment_.WebRootPath;
+			filePath = Path.Combine(webRootPath, "FileStorage");
+			photoPath = Path.Combine(filePath, "Photos");
+			otherPath = Path.Combine(filePath, "Files");
 			context_ = context;
 		}
 
 		public IActionResult Index()
 		{
-			return View(context_.Blogs.ToList<Blog>());
+			var blogs = context_.Blogs.ToList<Blog>();
+			return View(blogs);
 		}
 
 		public IActionResult Comments()
@@ -52,6 +66,7 @@ namespace congyou.Controllers
 			return RedirectToAction("Index");
 		}
 
+		[Authorize(Roles = "Admin")]
 		public IActionResult DeleteBlog(int? id)
 		{
 			if (id == null)
@@ -86,6 +101,12 @@ namespace congyou.Controllers
 				return StatusCode(StatusCodes.Status404NotFound);
 			}
 
+			if (User.IsInRole("User"))
+			{
+				var requests = context_.Requests.Where(c => c.UserName == User.Identity.Name && c.BlogId == blog.BlogId);
+				if (requests == null) return StatusCode(StatusCodes.Status403Forbidden);
+			}
+
 			var cmts = context_.Comments.Where(c => c.Blog == blog);
 
 			blog.Comments = cmts.OrderBy(c => c.CommentId).Select(c => c).ToList<Comment>();
@@ -102,7 +123,9 @@ namespace congyou.Controllers
 			return View(blog);
 		}
 
+		
 		[HttpGet]
+		[Authorize(Roles = "Admin")]
 		public IActionResult EditBlog(int? id)
 		{
 			if (id == null)
@@ -118,6 +141,7 @@ namespace congyou.Controllers
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin")]
 		public IActionResult EditBlog(int? id, Blog blg)
 		{
 			if (id == null)
@@ -222,9 +246,173 @@ namespace congyou.Controllers
 			return RedirectToAction("Index");
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> DownloadFile(int id)
+		{
+			List<string> files = null;
+			string file = "";
+			try
+			{
+				files = Directory.GetFiles(filePath).ToList<string>();
+				if (0 <= id && id < files.Count)
+					file = Path.GetFileName(files[id]);
+				else
+					return NotFound();
+			}
+			catch
+			{
+				return NotFound();
+			}
+			var memory = new MemoryStream();
+			file = files[id];
+			using (var stream = new FileStream(file, FileMode.Open))
+			{
+				await stream.CopyToAsync(memory);
+			}
+			memory.Position = 0;
+			return File(memory, GetContentType(file), Path.GetFileName(file));
+		}
+
+		private string GetContentType(string path)
+		{
+			var types = GetMimeTypes();
+			var ext = Path.GetExtension(path).ToLowerInvariant();
+			return types[ext];
+		}
+
+		private Dictionary<string, string> GetMimeTypes()
+		{
+			return new Dictionary<string, string>
+			{
+				{".cs", "application/C#" },
+				{".txt", "text/plain"},
+				{".pdf", "application/pdf"},
+				{".doc", "application/vnd.ms-word"},
+				{".docx", "application/vnd.ms-word"},
+				{".xls", "application/vnd.ms-excel"},
+				{".xlsx", "application/vnd.openxmlformatsofficedocument.spreadsheetml.sheet"},
+				{".png", "image/png"},
+				{".jpg", "image/jpeg"},
+				{".jpeg", "image/jpeg"},
+				{".gif", "image/gif"},
+				{".csv", "text/csv"}
+			};
+		}
+
+		[Authorize(Roles = "Admin")]
+		public ActionResult EditFiles(int? id)
+		{
+			if (id == null)
+			{
+				return StatusCode(StatusCodes.Status400BadRequest);
+			}
+			Blog blog = context_.Blogs.Find(id);
+
+			if (blog == null)
+			{
+				return StatusCode(StatusCodes.Status404NotFound);
+			}
+
+			return View(blog);
+		}
+
+		[Authorize(Roles = "Admin")]
+		public IActionResult DeleteFile(int? id)
+		{
+			if (id == null)
+			{
+				return StatusCode(StatusCodes.Status400BadRequest);
+			}
+			var file = context_.Files.Find(id);
+			try
+			{
+				//var file = context_.Files.Find(id);
+				if (file != null)
+				{
+					context_.Remove(file);
+					context_.SaveChanges();
+				}
+			}
+			catch (Exception)
+			{ }
+
+			var blog = context_.Blogs.Find(file.BlogId);
+			foreach (var f in blog.Files)
+			{
+				if (f.Id == id) blog.Files.Remove(f);
+			}
+			context_.SaveChanges();
+			return RedirectToAction("EditFiles", file.BlogId);
+		}
+
+		[Authorize(Roles = "Admin")]
+		public IActionResult DeletePhoto(int? id)
+		{
+			if (id == null)
+			{
+				return StatusCode(StatusCodes.Status400BadRequest);
+			}
+			var photo = context_.Photos.Find(id);
+			try
+			{
+				//var file = context_.Files.Find(id);
+				if (photo != null)
+				{
+					context_.Remove(photo);
+					context_.SaveChanges();
+				}
+			}
+			catch (Exception)
+			{ }
+
+			var blog = context_.Blogs.Find(photo.BlogId);
+			foreach (var f in blog.Photos)
+			{
+				if (f.Id == id) blog.Photos.Remove(f);
+			}
+			return RedirectToAction("EditFiles", photo.BlogId);
+		}
+
+		public ActionResult SendRequest()
+		{
+			var requests = context_.Requests.Where(c => c.IsAccepted == false);
+
+			return View(requests.ToList<Request>());
+		}
+
+		public ActionResult PendingRequests()
+		{
+			var requests = context_.Requests.Where(c => c.IsAccepted == false && c.UserName == User.Identity.Name);
+
+			return View(requests.ToList<Request>());
+		}
 		public IActionResult Privacy()
 		{
 			return View();
+		}
+
+		public ActionResult ApproveRequest(int id)
+		{
+			var request = context_.Requests.Find(id);
+			request.IsAccepted = true;
+			context_.SaveChanges();
+			return RedirectToAction("SendRequest");
+		}
+
+		public ActionResult IgnoreRequest(int id)
+		{
+			var request = context_.Requests.Find(id);
+			context_.Remove(request);
+			context_.SaveChanges();
+			return RedirectToAction("SendRequest");
+		}
+
+		public ActionResult CancelRequest(int id)
+		{
+			var request = context_.Requests.Find(id);
+			context_.Remove(request);
+			context_.SaveChanges();
+			return RedirectToAction("PendingRequest");
 		}
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
