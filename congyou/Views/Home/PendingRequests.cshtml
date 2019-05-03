@@ -7,7 +7,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Pending Requests</h1>
+<h1>Here are pending Requests</h1>
 
 
 <table class="table">
@@ -20,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.BlogId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UserName)
+                @Html.DisplayNameFor(model => model.Note)
             </th>
             <th></th>
         </tr>
@@ -28,18 +28,22 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td style="padding: 0.1em;">
-                    @Html.DisplayFor(modelItem => item.Id)
-                </td>
-                <td style="padding: 0.1em;">
-                    @Html.DisplayFor(modelItem => item.BlogId)
-                </td>
-                <td style="padding: 0.1em;">
-                    @*<a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |*@
-                    <a asp-action="CancelRequest" asp-route-id="@item.Id">Cancel Request</a>
-                </td>
-            </tr>
+        <tr>
+            <td style="padding: 0.1em;">
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td style="padding: 0.1em;">
+                @Html.DisplayFor(modelItem => item.BlogId)
+            </td>
+            <td style="padding: 0.1em;">
+                @Html.DisplayFor(modelItem => item.Note)
+            </td>
+            <td style="padding: 0.1em;">
+                <a asp-action="ApproveRequest" asp-route-id="@item.Id">Approve Request</a> |
+                @*<a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |*@
+                <a asp-action="IgnoreRequest" asp-route-id="@item.Id">Ignore Request</a>
+            </td>
+        </tr>
         }
     </tbody>
 </table>

@@ -13,6 +13,6 @@ namespace congyou.Models
 		public string Path { get; set; }
 		public string Name { get; set; }
 		public int? BlogId { get; set; }
-		public Blog Blog { get; set; }
+		//public Blog Blog { get; set; }
 	}
 }

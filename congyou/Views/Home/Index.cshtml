@@ -10,18 +10,25 @@
 {
 <p>
     <a asp-action="CreateBlog">Create New Blog</a>
-    <a asp-action="SendRequests">Requests</a>
+    @if (User.IsInRole("User"))
+    {
+        <a asp-action="SendRequest">Requests</a>
+    }
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="PendingRequests">Requests</a>
+    }
 </p>
 }
 <table class="table">
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Title)
+                    @Html.DisplayNameFor(model => model.BlogId)
                 </th>
-                @*@<th>
-                        @Html.DisplayNameFor(model => model.Content)
-                    </th>*@
+                <th>
+                        @Html.DisplayNameFor(model => model.Title)
+                    </th>
                 <th></th>
             </tr>
         </thead>
@@ -30,16 +37,15 @@
             {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Title)
+                    @Html.DisplayFor(modelItem => item.BlogId)
                 </td>
-                @*<td>
-            @Html.DisplayFor(modelItem => item.Content)
-        </td>*@
+                <td>
+            @Html.DisplayFor(modelItem => item.Title)
+        </td>
                 @if (User.IsInRole("Admin"))
                 {
                 <td>
                     <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog(title & texts) </a> |
-                    <a asp-action="EditPhotos" asp-route-id="@item.BlogId">Edit Photos </a> |
                     <a asp-action="EditFiles" asp-route-id="@item.BlogId">Edit Files </a> |
                     <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
                     <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
@@ -50,7 +56,6 @@
                 {
                 <td>
                     <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
-                    <a asp-action="PendingRequest" asp-route-id="@item.BlogId">Send Request</a> |
                 </td>
                 }
             </tr>

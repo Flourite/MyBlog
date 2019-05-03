@@ -1,47 +1,47 @@
-﻿@*
+﻿@model congyou.Models.Request
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@model IEnumerable<congyou.Models.Request>
 @{
-    ViewData["Title"] = "PendingRequests";
+    ViewData["Title"] = "SendRequest";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Here are your pending Requests</h1>
+<h1>SendRequest</h1>
 
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BlogId)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td style="padding: 0.1em;">
-                    @Html.DisplayFor(modelItem => item.Id)
-                </td>
-                <td style="padding: 0.1em;">
-                    @Html.DisplayFor(modelItem => item.BlogId)
-                </td>
-                <td style="padding: 0.1em;">
-                    <a asp-action="ApproveRequest" asp-route-id="@item.Id">Approve Request</a> |
-                    @*<a asp-action="Details" asp-route-id="@item.LectureId">Details</a> |*@
-                    <a asp-action="IgnoreRequest" asp-route-id="@item.Id">Ignore Request</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<h4>Request</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="SendRequest">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            @*<div class="form-group">
+                    <label asp-for="CommenterName" class="control-label"></label>
+                    <input asp-for="CommenterName" class="form-control" />
+                    <span asp-validation-for="CommenterName" class="text-danger"></span>
+                </div>*@
+            <div class="form-group">
+                <label asp-for="Note" class="control-label"></label>
+                <input asp-for="Note" class="form-control" />
+                <span asp-validation-for="Note" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                    <label asp-for="BlogId" class="control-label"></label>
+                    <select asp-for="BlogId" class="form-control" asp-items="ViewBag.BlogId"></select>
+                    <span asp-validation-for="BlogId" class="text-danger"></span>
+                </div>*@
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
 
 <div>
     <a asp-action="Index">Back to Blog List</a>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

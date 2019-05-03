@@ -16,8 +16,6 @@ namespace congyou.Models
 
 		public ICollection<Comment> Comments { get; set; }
 
-		public ICollection<Photo> Photos { get; set; }
-
 		public ICollection<File> Files { get; set; }
 	}
 

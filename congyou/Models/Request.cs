@@ -12,7 +12,8 @@ namespace congyou.Models
 		public int Id { get; set; }
 		public int? BlogId { get; set; }
 		public string UserName { get; set; }
-		public Blog Blog { get; set; }
+		//public Blog Blog { get; set; }
 		public bool IsAccepted { get; set; }
+		public string Note { get; set; }
 	}
 }

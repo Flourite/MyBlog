@@ -22,16 +22,11 @@ namespace congyou.Controllers
 		private readonly IHostingEnvironment hostingEnvironment_;
 		private string webRootPath = null;
 		private string filePath = null;
-		private string photoPath = null;
-		private string otherPath = null;
-
 		public HomeController(ApplicationDbContext context, IHostingEnvironment hostingEnvironment)
 		{
 			hostingEnvironment_ = hostingEnvironment;
 			webRootPath = hostingEnvironment_.WebRootPath;
 			filePath = Path.Combine(webRootPath, "FileStorage");
-			photoPath = Path.Combine(filePath, "Photos");
-			otherPath = Path.Combine(filePath, "Files");
 			context_ = context;
 		}
 
@@ -373,18 +368,30 @@ namespace congyou.Controllers
 			return RedirectToAction("EditFiles", photo.BlogId);
 		}
 
-		public ActionResult SendRequest()
+		public ActionResult pendingRequests()
 		{
 			var requests = context_.Requests.Where(c => c.IsAccepted == false);
 
 			return View(requests.ToList<Request>());
 		}
-
-		public ActionResult PendingRequests()
+		
+		[HttpGet]
+		public IActionResult SendRequest()
 		{
-			var requests = context_.Requests.Where(c => c.IsAccepted == false && c.UserName == User.Identity.Name);
+			Request request = new Request();
+			return View(request);
+		}
 
-			return View(requests.ToList<Request>());
+		[HttpPost]
+		public IActionResult SendRequest(Request request)
+		{
+			request.IsAccepted = false;
+			int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
+			request.BlogId = blogId_;
+			request.UserName = User.Identity.Name;
+			context_.Requests.Add(request);
+			context_.SaveChanges();
+			return RedirectToAction("Index");
 		}
 		public IActionResult Privacy()
 		{
@@ -415,6 +422,32 @@ namespace congyou.Controllers
 			return RedirectToAction("PendingRequest");
 		}
 
+		[HttpGet]
+		public ActionResult UploadFile()
+		{
+			return View();
+		}
+
+		[HttpPost] 
+		public async Task<IActionResult> UploadFile(Models.File file, IFormFile f)
+		{
+			int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
+			file.BlogId = blogId_;
+			var path = Path.Combine(filePath, f.FileName);
+			file.Path = path.ToString();
+			context_.Files.Add(file);
+			context_.SaveChanges();
+			Blog blog = context_.Blogs.Find(blogId_);
+			blog.Files.Add(file);
+			context_.SaveChanges();
+			using (var fileStream = new FileStream(path, FileMode.Create))
+			{
+				await f.CopyToAsync(fileStream);
+			}
+			return RedirectToAction("Index");
+		}
+
+	
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{
