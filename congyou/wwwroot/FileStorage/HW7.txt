@@ -1,0 +1,253 @@
+#include<iostream>
+#include<thread>
+#include<mutex>
+#include<vector>
+#include<ctime>
+#include<condition_variable>
+#include<chrono>
+#include<algorithm>
+using namespace std;
+mutex lock1, lock2, lock3;
+condition_variable cv1, cv2;
+int capacity[4] = { 5, 5, 4, 3 };
+int buffer[4] = { 0, 0, 0, 0 };
+bool haveDeadlock = false;
+bool flag = false;
+vector<vector<int> > partWRequests;
+vector<vector<int> > prodWRequests;
+int times = 6;
+//vector<int> partWFinishedRequest;
+//vector<int> prodWFinishedRequest;
+bool requestCompleted(const vector<int> &v) {
+	return v[0] == 0 && v[1] == 0 && v[2] == 0 && v[3] == 0;
+}
+
+vector<int> generateProdWRequest() {
+	srand(time(0));
+	vector<int> res(4, 0);
+	int exclude = rand() % 4;
+	for (int i = 0; i < 4; ++i) {
+		if (i != exclude) {
+			srand(time(0));
+			res[i] = rand() % capacity[i] + 1;
+		}
+	}
+	return res;
+}
+
+vector<int> generatePartWRequest() {
+	srand(time(0));
+	vector<int> res(4, 0);
+	int exclude1 = rand() % 4;
+	int exclude2;
+	while (true) {
+		srand(time(0));
+		exclude2 = rand() % 4;
+		if (exclude2 != exclude1) break;
+	}
+	for (int i = 0; i < 4; ++i) {
+		if (i != exclude1 && i != exclude2) {
+			srand(time(0));
+			res[i] = rand() % (capacity[i] + 1);
+		}
+	}
+	if (requestCompleted(res)) res = generatePartWRequest();
+	return res;
+}
+
+bool canPlace(int i) {
+	for (int j = 0; j < 4; ++j) {
+		if (partWRequests[i][j] != 0 && buffer[j] < capacity[j]) return true;
+	}
+	return false;
+}
+
+bool canTake(int i) {
+	for (int j = 0; j < 4; ++j) {
+		if (prodWRequests[i][j] != 0 && buffer[j] > 0) return true;
+	}
+	return false;
+}
+
+bool checkDeadLock() {
+	for (int i = 0; i < partWRequests.size(); ++i) {
+		if (canPlace(i)) return false;
+	}
+
+	for (int i = 0; i < prodWRequests.size(); ++i) {
+		if (canTake(i)) return false;
+	}
+
+	return true;
+}
+
+void PartWorker(int i) {
+	int run = times - 1;
+	while (run > 0) {
+		if (requestCompleted(partWRequests[i])) {
+			srand(time(0));
+			this_thread::sleep_for(chrono::milliseconds(rand() % 5 + 2));
+			lock2.lock();
+			partWRequests[i] = generatePartWRequest();
+			lock2.unlock();
+			--run;
+		}
+		this_thread::sleep_for(chrono::milliseconds(1));
+		unique_lock<mutex> ulock1(lock1);
+		if (!haveDeadlock) {
+			lock2.lock();
+			lock3.lock();
+			haveDeadlock = checkDeadLock();
+			lock3.unlock();
+			lock2.unlock();
+		}
+		if (haveDeadlock) {
+			if (!flag) {
+				cout << "Part Worker ID: " << i << endl;
+				cout << "Iteration: " << times - run << endl;
+				cout << "Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+					<< buffer[2] << "," << buffer[3] << ")" << endl;
+				cout << "Place Request: (" << partWRequests[i][0] << "," << partWRequests[i][1]
+					<< "," << partWRequests[i][2] << "," << partWRequests[i][3] << ")" << endl;
+				cout << "Updated Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+					<< buffer[2] << "," << buffer[3] << ")" << endl;
+				cout << "Updated Place Request: (" << partWRequests[i][0] << "," << partWRequests[i][1]
+					<< "," << partWRequests[i][2] << "," << partWRequests[i][3] << ")" << endl;
+				cout << "Deadlock Detected" << endl;
+				cout << "Aborted Iteration: " << times - run << endl;
+				cout << endl;
+				flag = true;
+			}
+			cv1.notify_one();
+			cv2.notify_one();
+			return;
+		}
+		while (!canPlace(i) && !haveDeadlock) cv1.wait(ulock1);
+		if (haveDeadlock) {
+			cv1.notify_one();
+			cv2.notify_one();
+			return;
+		}
+		cout << "Part Worker ID: " << i << endl;
+		cout << "Iteration: " << times - run << endl;
+		cout << "Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+			<< buffer[2] << "," << buffer[3] << ")" << endl;
+		cout << "Place Request: (" << partWRequests[i][0] << "," << partWRequests[i][1]
+			<< "," << partWRequests[i][2] << "," << partWRequests[i][3] << ")" << endl;
+		for (int j = 0; j < 4; ++j) {
+			int tmp = min(capacity[j] - buffer[j], partWRequests[i][j]);
+			buffer[j] += tmp;
+			partWRequests[i][j] -= tmp;
+		}
+		cout << "Updated Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+			<< buffer[2] << "," << buffer[3] << ")" << endl;
+		cout << "Updated Place Request: (" << partWRequests[i][0] << "," << partWRequests[i][1]
+			<< "," << partWRequests[i][2] << "," << partWRequests[i][3] << ")" << endl;
+		cout << endl;
+		cv2.notify_one();
+	}
+}
+
+void ProductWorker(int i) {
+	int run = times - 1;
+	while (run > 0) {
+		if (requestCompleted(prodWRequests[i])) {
+			srand(time(0));
+			this_thread::sleep_for(chrono::milliseconds(rand() % 5 + 2));
+			lock3.lock();
+			prodWRequests[i] = generateProdWRequest();
+			lock3.unlock();
+			--run;
+		}
+		this_thread::sleep_for(chrono::milliseconds(1));
+		unique_lock<mutex> ulock1(lock1);
+		if (!haveDeadlock) {
+			lock2.lock();
+			lock3.lock();
+			haveDeadlock = checkDeadLock();
+			lock3.unlock();
+			lock2.unlock();
+		}
+		if (haveDeadlock) {
+			if (!flag) {
+				cout << "Product Worker ID: " << i << endl;
+				cout << "Iteration: " << times - run << endl;
+				cout << "Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+					<< buffer[2] << "," << buffer[3] << ")" << endl;
+				cout << "Pickup Request: (" << prodWRequests[i][0] << "," << prodWRequests[i][1]
+					<< "," << prodWRequests[i][2] << "," << prodWRequests[i][3] << ")" << endl;
+				cout << "Updated Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+					<< buffer[2] << "," << buffer[3] << ")" << endl;
+				cout << "Updated Pickup Request: (" << prodWRequests[i][0] << "," << prodWRequests[i][1]
+					<< "," << prodWRequests[i][2] << "," << prodWRequests[i][3] << ")" << endl;
+				cout << "Deadlock Detected" << endl;
+				cout << "Aborted Iteration: " << times - run << endl;
+				cout << endl;
+				flag = true;
+			}
+			cv1.notify_one();
+			cv2.notify_one();
+			return;
+		}
+		while (!canTake(i) && !haveDeadlock) cv2.wait(ulock1);
+		if (haveDeadlock) {
+			cv1.notify_one();
+			cv2.notify_one();
+			return;
+		}
+		cout << "Product Worker ID: " << i << endl;
+		cout << "Iteration: " << times - run << endl;
+		cout << "Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+			<< buffer[2] << "," << buffer[3] << ")" << endl;
+		cout << "Pickup Request: (" << prodWRequests[i][0] << "," << prodWRequests[i][1]
+			<< "," << prodWRequests[i][2] << "," << prodWRequests[i][3] << ")" << endl;
+		for (int j = 0; j < 4; ++j) {
+			int tmp = min(buffer[j], prodWRequests[i][j]);
+			buffer[j] -= tmp;
+			prodWRequests[i][j] -= tmp;
+		}
+		cout << "Updated Buffer State: (" << buffer[0] << "," << buffer[1] << ","
+			<< buffer[2] << "," << buffer[3] << ")" << endl;
+		cout << "Updated Pickup Request: (" << prodWRequests[i][0] << "," << prodWRequests[i][1]
+			<< "," << prodWRequests[i][2] << "," << prodWRequests[i][3] << ")" << endl;
+		cout << endl;
+		cv1.notify_one();
+	}
+}
+
+int main() {
+	const int m = 20, n = 15; //m: number of Part Workers
+	//n: number of Product Workers
+	//m>n
+	partWRequests.resize(m);
+	prodWRequests.resize(n);
+	for (int i = 0; i < m; ++i) {
+		//vector<int> tmp(4, 0);
+		partWRequests[i] = generatePartWRequest();
+	}
+	for (int i = 0; i < n; ++i) {
+		//vector<int> tmp(4, 0);
+		prodWRequests[i] = generateProdWRequest();
+	}
+	thread partW[m];
+	thread prodW[n];
+	for (int i = 0; i < n; i++) {
+		partW[i] = thread(PartWorker, i);
+		prodW[i] = thread(ProductWorker, i);
+	}
+	for (int i = n; i < m; i++) {
+		partW[i] = thread(PartWorker, i);
+	}
+	/* Join the threads to the main threads */
+	for (int i = 0; i < n; i++) {
+		partW[i].join();
+		prodW[i].join();
+	}
+	for (int i = n; i < m; i++) {
+		partW[i].join();
+	}
+	cout << "Finish!" << endl;
+	getchar();
+	getchar();
+	return 0;
+}

@@ -214,6 +214,44 @@ namespace congyou.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("congyou.Models.File", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("BlogId");
+
+                    b.Property<string>("Name");
+
+                    b.Property<string>("Path");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("congyou.Models.Request", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("BlogId");
+
+                    b.Property<bool>("IsAccepted");
+
+                    b.Property<string>("Note");
+
+                    b.Property<string>("UserName");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Requests");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
@@ -261,8 +299,15 @@ namespace congyou.Migrations
 
             modelBuilder.Entity("congyou.Models.Comment", b =>
                 {
-                    b.HasOne("congyou.Models.Blog", "Blog")
+                    b.HasOne("congyou.Models.Blog")
                         .WithMany("Comments")
+                        .HasForeignKey("BlogId");
+                });
+
+            modelBuilder.Entity("congyou.Models.File", b =>
+                {
+                    b.HasOne("congyou.Models.Blog")
+                        .WithMany("Files")
                         .HasForeignKey("BlogId");
                 });
 #pragma warning restore 612, 618

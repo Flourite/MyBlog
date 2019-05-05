@@ -20,7 +20,7 @@ namespace congyou.Controllers
 		private string webRootPath = null;
 		private string filePath = null;
 		private string photoPath = null;
-		private string otherPath = null;
+		//private string otherPath = null;
 		public FilesController(ApplicationDbContext context, IHostingEnvironment hostingEnvironment)
 		{
 			hostingEnvironment_ = hostingEnvironment;

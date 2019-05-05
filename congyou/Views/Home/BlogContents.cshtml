@@ -32,8 +32,8 @@
     @foreach (var file in Model.Files)
     {
         <div style="padding:0px 25px; margin:0px;">
-            @Html.Label(file.Id.ToString()) - 
-            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.Path)">@Html.Label(file.Name)</a>
+            @Html.Label(file.Id.ToString()) - - - -
+            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.Id.ToString())">@Html.Label(file.Name)</a>
         </div>
     }
 </div>

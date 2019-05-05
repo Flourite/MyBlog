@@ -36,14 +36,14 @@ namespace congyou.Controllers
 			return View(blogs);
 		}
 
-		public IActionResult Comments()
+		/*public IActionResult Comments()
 		{
 			var cmts = context_.Comments.Include(c => c.Blog);
 			var orderedcmts = from c in cmts
 												orderby c.CommentId
 												select c;
 			return View(orderedcmts);
-		}
+		}*/
 
 		[HttpGet]
 		[Authorize(Roles = "Admin")]
@@ -56,29 +56,41 @@ namespace congyou.Controllers
 		[HttpPost]
 		public IActionResult CreateBlog(int id, Blog blg)
 		{
+			//blg.Files = new List<File>();
 			context_.Blogs.Add(blg);
 			context_.SaveChanges();
 			return RedirectToAction("Index");
 		}
 
-		[Authorize(Roles = "Admin")]
 		public IActionResult DeleteBlog(int? id)
 		{
 			if (id == null)
 			{
 				return StatusCode(StatusCodes.Status400BadRequest);
 			}
-			try
-			{
+			//try
+			//{
 				var blog = context_.Blogs.Find(id);
 				if (blog != null)
 				{
-					context_.Remove(blog);
+				foreach (var comment in context_.Comments)
+				{
+					if (comment.BlogId == id) context_.Remove(comment);
+				}
+				foreach (var file in context_.Files)
+				{
+					if (file.BlogId == id) context_.Remove(file);
+				}
+				foreach (var request in context_.Requests)
+				{
+					if (request.BlogId == id) context_.Remove(request);
+				}
+				context_.Remove(blog);
 					context_.SaveChanges();
 				}
-			}
-			catch (Exception)
-			{ }
+			//}
+			//catch (Exception)
+			//{ }
 
 			return RedirectToAction("Index");
 		}
@@ -102,9 +114,11 @@ namespace congyou.Controllers
 				if (requests == null) return StatusCode(StatusCodes.Status403Forbidden);
 			}
 
-			var cmts = context_.Comments.Where(c => c.Blog == blog);
+			var cmts = context_.Comments.Where(c => c.BlogId == blog.BlogId);
+			var files = context_.Files.Where(c => c.BlogId == blog.BlogId);
 
 			blog.Comments = cmts.OrderBy(c => c.CommentId).Select(c => c).ToList<Comment>();
+			blog.Files = files.OrderBy(c => c.Id).Select(c => c).ToList<Models.File>();
 
 			if (blog.Comments == null)
 			{
@@ -113,6 +127,14 @@ namespace congyou.Controllers
 				cmt.CommenterName = "none";
 				cmt.Content = "none";
 				blog.Comments.Add(cmt);
+			}
+
+			if (blog.Files == null)
+			{
+				blog.Files = new List<Models.File>();
+				Models.File f = new Models.File();
+				f.Name = "none";
+				blog.Files.Add(f);
 			}
 
 			return View(blog);
@@ -191,6 +213,9 @@ namespace congyou.Controllers
 					List<Comment> comments = new List<Comment>();
 					blog.Comments = comments;
 				}
+				//cmt.Blog = blog;
+				//cmt.BlogId = blogId_;
+				cmt.CommenterName = User.Identity.Name;
 				blog.Comments.Add(cmt);
 
 				try
@@ -242,7 +267,7 @@ namespace congyou.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> DownloadFile(int id)
+		public IActionResult DownloadFile(int id)
 		{
 			List<string> files = null;
 			string file = "";
@@ -260,10 +285,10 @@ namespace congyou.Controllers
 			}
 			var memory = new MemoryStream();
 			file = files[id];
-			using (var stream = new FileStream(file, FileMode.Open))
-			{
-				await stream.CopyToAsync(memory);
-			}
+			var stream = new FileStream(file, FileMode.Open);
+			
+			stream.CopyToAsync(memory);
+			
 			memory.Position = 0;
 			return File(memory, GetContentType(file), Path.GetFileName(file));
 		}
@@ -294,7 +319,6 @@ namespace congyou.Controllers
 			};
 		}
 
-		[Authorize(Roles = "Admin")]
 		public ActionResult EditFiles(int? id)
 		{
 			if (id == null)
@@ -306,6 +330,15 @@ namespace congyou.Controllers
 			if (blog == null)
 			{
 				return StatusCode(StatusCodes.Status404NotFound);
+			}
+
+			var files = context_.Files.Where(c => c.BlogId == blog.BlogId);
+
+			blog.Files = files.OrderBy(c => c.Id).Select(c => c).ToList<Models.File>();
+			if (blog.Files == null)
+			{
+				blog.Files = new List<Models.File>();
+				context_.SaveChanges();
 			}
 
 			return View(blog);
@@ -332,42 +365,23 @@ namespace congyou.Controllers
 			{ }
 
 			var blog = context_.Blogs.Find(file.BlogId);
+			var files = context_.Files.Where(c => c.BlogId == blog.BlogId);
+
+			blog.Files = files.OrderBy(c => c.Id).Select(c => c).ToList<Models.File>();
+			if (blog.Files == null)
+			{
+				blog.Files = new List<Models.File>();
+				context_.SaveChanges();
+			}
 			foreach (var f in blog.Files)
 			{
 				if (f.Id == id) blog.Files.Remove(f);
 			}
 			context_.SaveChanges();
-			return RedirectToAction("EditFiles", file.BlogId);
+			return RedirectToAction("Index");
 		}
 
-		[Authorize(Roles = "Admin")]
-		public IActionResult DeletePhoto(int? id)
-		{
-			if (id == null)
-			{
-				return StatusCode(StatusCodes.Status400BadRequest);
-			}
-			var photo = context_.Photos.Find(id);
-			try
-			{
-				//var file = context_.Files.Find(id);
-				if (photo != null)
-				{
-					context_.Remove(photo);
-					context_.SaveChanges();
-				}
-			}
-			catch (Exception)
-			{ }
-
-			var blog = context_.Blogs.Find(photo.BlogId);
-			foreach (var f in blog.Photos)
-			{
-				if (f.Id == id) blog.Photos.Remove(f);
-			}
-			return RedirectToAction("EditFiles", photo.BlogId);
-		}
-
+		
 		public ActionResult pendingRequests()
 		{
 			var requests = context_.Requests.Where(c => c.IsAccepted == false);
@@ -423,27 +437,35 @@ namespace congyou.Controllers
 		}
 
 		[HttpGet]
-		public ActionResult UploadFile()
+		public ActionResult UploadFile(int id)
 		{
-			return View();
+			Models.File file = new Models.File();
+			file.BlogId = id;
+			return View(file);
 		}
 
 		[HttpPost] 
-		public async Task<IActionResult> UploadFile(Models.File file, IFormFile f)
+		public ActionResult UploadFile(int? id, Models.File file, IFormFile f)
 		{
-			int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
-			file.BlogId = blogId_;
+			//int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
+			file.BlogId = id;
+			file.Id = 0;
 			var path = Path.Combine(filePath, f.FileName);
 			file.Path = path.ToString();
-			context_.Files.Add(file);
-			context_.SaveChanges();
-			Blog blog = context_.Blogs.Find(blogId_);
+			//context_.Files.Add(file);
+			//context_.SaveChanges();
+			Blog blog = context_.Blogs.Find(id);
+			if (blog.Files == null)
+			{
+				blog.Files = new List<Models.File>();
+			}
 			blog.Files.Add(file);
 			context_.SaveChanges();
-			using (var fileStream = new FileStream(path, FileMode.Create))
-			{
-				await f.CopyToAsync(fileStream);
-			}
+			var fileStream = new FileStream(path, FileMode.Create);
+			
+		  f.CopyToAsync(fileStream);
+			
+		
 			return RedirectToAction("Index");
 		}
 
