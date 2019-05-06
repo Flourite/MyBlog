@@ -19,7 +19,7 @@ namespace congyou.Controllers
 		private readonly IHostingEnvironment hostingEnvironment_;
 		private string webRootPath = null;
 		private string filePath = null;
-		private string photoPath = null;
+		//private string photoPath = null;
 		//private string otherPath = null;
 		public FilesController(ApplicationDbContext context, IHostingEnvironment hostingEnvironment)
 		{
@@ -103,15 +103,19 @@ namespace congyou.Controllers
 		}
 
 		
-		[HttpPost("{id}")]
-		public async Task<IActionResult> Upload(int id)
+		[HttpPost]
+		public async Task<IActionResult> Upload()
 		{
 			var request = HttpContext.Request;
 			foreach (var file in request.Form.Files)
 			{
+				int id;
+				string[] s;
 				if (file.Length > 0)
 				{
-					var path = Path.Combine(filePath, file.FileName);
+					s = file.FileName.Split("+");
+					id = Convert.ToInt32(s[0]);
+					var path = Path.Combine(filePath, s[1]);
 					using (var fileStream = new FileStream(path, FileMode.Create))
 					{
 						await file.CopyToAsync(fileStream);
@@ -123,10 +127,14 @@ namespace congyou.Controllers
 				}
 				Models.File f = new Models.File();
 				f.BlogId = id;
-				f.Name = file.FileName;
-				f.Path = Path.Combine(photoPath, file.FileName).ToString();
-				context_.Files.Add(f);
+				f.Name = s[1];
+				f.Path = Path.Combine(filePath, s[1]).ToString();
+				//context_.Files.Add(f);
 				Blog blog = context_.Blogs.Find(id);
+				if (blog.Files == null)
+				{
+					blog.Files = new List<Models.File>();
+				}
 				blog.Files.Add(f);
 				context_.SaveChanges();
 			}
@@ -140,27 +148,57 @@ namespace congyou.Controllers
 		[HttpDelete("{id}")]
 		public IActionResult Delete(int id)
 		{
+			var f = context_.Files.Find(id);
+			if (f == null) return NotFound();
+			else
+			{
+				context_.Remove(f);
+				context_.SaveChanges();
+			}
 			List<string> files = null;
 			string file = "";
 			try
 			{
 				files = Directory.GetFiles(filePath).ToList<string>();
-				if (0 <= id && id < files.Count)
+				bool flag = false;
+				foreach (var fi in files)
 				{
-					file = Path.GetFileName(files[id]);
-					System.IO.File.Delete(file);
+					string tmp = fi;
+					//string[] s = fi.Split("+");
+					//if (s.Count() == 2) tmp = s[1]; else tmp = s[0];  
+					if (tmp == f.Path)
+					{
+						file = Path.GetFileName(tmp);
+						System.IO.File.Delete(Path.Combine(filePath, file).ToString());
+						flag = true;
+					}
+					
 				}
-				else
-					return NotFound();
+				if (!flag) return NotFound();
 			}
 			catch
 			{
 				return NotFound();
 			}
-			var f = context_.Files.Find(id);
-			context_.Files.Remove(f);
+
 			var blog = context_.Blogs.Find(f.BlogId);
-			blog.Files.Remove(f);
+			var fil = context_.Files.Where(c => c.BlogId == blog.BlogId);
+
+			blog.Files = fil.OrderBy(c => c.Id).Select(c => c).ToList<Models.File>();
+			if (blog.Files == null)
+			{
+				blog.Files = new List<Models.File>();
+				context_.SaveChanges();
+			}
+			foreach (var ff in blog.Files)
+			{
+				if (ff.Id == id)
+				{
+					
+					blog.Files.Remove(ff);
+				}
+			}
+			context_.SaveChanges();
 			context_.SaveChanges();
 			return Ok();
 		}

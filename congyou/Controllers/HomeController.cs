@@ -46,7 +46,6 @@ namespace congyou.Controllers
 		}*/
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
 		public IActionResult CreateBlog(int id)
 		{
 			var model = new Blog();
@@ -108,10 +107,11 @@ namespace congyou.Controllers
 				return StatusCode(StatusCodes.Status404NotFound);
 			}
 
-			if (User.IsInRole("User"))
+			if (!User.IsInRole("Admin"))
 			{
-				var requests = context_.Requests.Where(c => c.UserName == User.Identity.Name && c.BlogId == blog.BlogId);
-				if (requests == null) return StatusCode(StatusCodes.Status403Forbidden);
+				var requests = context_.Requests.Where(c => c.UserName == User.Identity.Name && c.BlogId == blog.BlogId && c.IsAccepted == true);
+				var r = requests.ToList<Request>();
+				if (r.Count == 0) return StatusCode(StatusCodes.Status403Forbidden);
 			}
 
 			var cmts = context_.Comments.Where(c => c.BlogId == blog.BlogId);
@@ -183,8 +183,15 @@ namespace congyou.Controllers
 		[HttpGet]
 		public IActionResult AddComment(int id)
 		{
+			
 			HttpContext.Session.SetInt32(sessionId_, id);
 			Blog blog = context_.Blogs.Find(id);
+			if (!User.IsInRole("Admin"))
+			{
+				var requests = context_.Requests.Where(c => c.UserName == User.Identity.Name && c.BlogId == blog.BlogId && c.IsAccepted == true);
+				var r = requests.ToList<Request>();
+				if (r.Count == 0) return StatusCode(StatusCodes.Status403Forbidden);
+			}
 			if (blog == null)
 			{
 				return StatusCode(StatusCodes.Status404NotFound);
@@ -400,8 +407,8 @@ namespace congyou.Controllers
 		public IActionResult SendRequest(Request request)
 		{
 			request.IsAccepted = false;
-			int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
-			request.BlogId = blogId_;
+			//int? blogId_ = HttpContext.Session.GetInt32(sessionId_);
+			//request.BlogId = blogId_;
 			request.UserName = User.Identity.Name;
 			context_.Requests.Add(request);
 			context_.SaveChanges();
@@ -417,7 +424,7 @@ namespace congyou.Controllers
 			var request = context_.Requests.Find(id);
 			request.IsAccepted = true;
 			context_.SaveChanges();
-			return RedirectToAction("SendRequest");
+			return RedirectToAction("PendingRequests");
 		}
 
 		public ActionResult IgnoreRequest(int id)
@@ -425,7 +432,7 @@ namespace congyou.Controllers
 			var request = context_.Requests.Find(id);
 			context_.Remove(request);
 			context_.SaveChanges();
-			return RedirectToAction("SendRequest");
+			return RedirectToAction("PendingRequests");
 		}
 
 		public ActionResult CancelRequest(int id)
@@ -433,7 +440,7 @@ namespace congyou.Controllers
 			var request = context_.Requests.Find(id);
 			context_.Remove(request);
 			context_.SaveChanges();
-			return RedirectToAction("PendingRequest");
+			return RedirectToAction("PendingRequests");
 		}
 
 		[HttpGet]

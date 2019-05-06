@@ -8,58 +8,63 @@
 <h1>Index - List of Blogs</h1>
 @if (User.IsInRole("Admin"))
 {
-<p>
-    <a asp-action="CreateBlog">Create New Blog</a>
-    @if (User.IsInRole("User"))
-    {
+    <p>
+        <a asp-action="CreateBlog">Create New Blog</a>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="PendingRequests">Requests</a>
+        }
+    </p>
+}
+@if (!User.IsInRole("Admin"))
+{
+    <p>
         <a asp-action="SendRequest">Requests</a>
-    }
-    @if (User.IsInRole("Admin"))
-    {
-        <a asp-action="PendingRequests">Requests</a>
-    }
-</p>
+    </p>
+    
 }
 <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.BlogId)
-                </th>
-                <th>
-                        @Html.DisplayNameFor(model => model.Title)
-                    </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.BlogId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.BlogId)
                 </td>
                 <td>
-            @Html.DisplayFor(modelItem => item.Title)
-        </td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
                 @if (User.IsInRole("Admin"))
                 {
-                <td>
-                    <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog(title & texts) </a> |
-                    <a asp-action="EditFiles" asp-route-id="@item.BlogId">Edit Files </a> |
-                    <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
-                    <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
-                    <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
-                </td>
+                    <td>
+                        <a asp-action="EditBlog" asp-route-id="@item.BlogId">Edit Blog(title & texts) </a> |
+                        <a asp-action="EditFiles" asp-route-id="@item.BlogId">Edit Files </a> |
+                        <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
+                        <a asp-action="DeleteBlog" asp-route-id="@item.BlogId">Delete Blog</a> |
+                        <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
+                    </td>
                 }
-                @if (User.IsInRole("User"))
+                @if (!User.IsInRole("Admin"))
                 {
-                <td>
-                    <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
-                </td>
+                    <td>
+                        <a asp-action="BlogContents" asp-route-id="@item.BlogId">Blog Contents</a> |
+                        <a asp-action="AddComment" asp-route-id="@item.BlogId">Add Comment</a> |
+                    </td>
                 }
             </tr>
-            }
-        </tbody>
-    </table>
+        }
+    </tbody>
+</table>
 
