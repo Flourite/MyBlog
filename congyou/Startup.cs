@@ -86,6 +86,9 @@ namespace congyou
 				routes.MapRoute(
 									name: "default",
 									template: "{controller=Home}/{action=Index}/{id?}");
+				routes.MapRoute(
+					name: "error",
+					template: "{*url}", defaults: new { Controller = "Home", Action = "ErrorPage" });
 			});
 		}
 	}

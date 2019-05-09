@@ -49,7 +49,7 @@ namespace congyou.Controllers
 		}
 
 
-		
+
 		[HttpGet("{id}")]
 		public async Task<IActionResult> Download(int id)
 		{
@@ -102,7 +102,7 @@ namespace congyou.Controllers
 			};
 		}
 
-		
+
 		[HttpPost]
 		public async Task<IActionResult> Upload()
 		{
@@ -142,7 +142,7 @@ namespace congyou.Controllers
 			return Ok();
 		}
 
-	
+
 
 		// DELETE api/<controller>/5
 		[HttpDelete("{id}")]
@@ -172,7 +172,7 @@ namespace congyou.Controllers
 						System.IO.File.Delete(Path.Combine(filePath, file).ToString());
 						flag = true;
 					}
-					
+
 				}
 				if (!flag) return NotFound();
 			}
@@ -194,11 +194,23 @@ namespace congyou.Controllers
 			{
 				if (ff.Id == id)
 				{
-					
+
 					blog.Files.Remove(ff);
 				}
 			}
 			context_.SaveChanges();
+			context_.SaveChanges();
+			return Ok();
+		}
+
+		[HttpPut("{id}")]
+		public IActionResult edit(int id, [FromBody] string value)
+		{
+			//var content = HttpContext.Request;
+			Blog blog = context_.Blogs.Find(id);
+			//string s;
+			//content.Form.TryGetValue(s);
+			blog.Content = value;
 			context_.SaveChanges();
 			return Ok();
 		}

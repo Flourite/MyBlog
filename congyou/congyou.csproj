@@ -6,8 +6,20 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="wwwroot\FileStorage\Files\**" />
+    <Compile Remove="wwwroot\FileStorage\Photos\**" />
+    <Content Remove="wwwroot\FileStorage\Files\**" />
+    <Content Remove="wwwroot\FileStorage\Photos\**" />
+    <EmbeddedResource Remove="wwwroot\FileStorage\Files\**" />
+    <EmbeddedResource Remove="wwwroot\FileStorage\Photos\**" />
+    <None Remove="wwwroot\FileStorage\Files\**" />
+    <None Remove="wwwroot\FileStorage\Photos\**" />
+  </ItemGroup>
+
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
@@ -16,8 +28,6 @@
 
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
-    <Folder Include="wwwroot\FileStorage\Files\" />
-    <Folder Include="wwwroot\FileStorage\Photos\" />
   </ItemGroup>
 
 </Project>

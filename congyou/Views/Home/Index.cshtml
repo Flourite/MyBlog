@@ -8,20 +8,23 @@
 <h1>Index - List of Blogs</h1>
 @if (User.IsInRole("Admin"))
 {
-    <p>
-        <a asp-action="CreateBlog">Create New Blog</a>
+<p>
+    
+    <a href="~/aboutme.html">About me</a> |
+    <a asp-action="CreateBlog">Create New Blog</a> |
 
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-action="PendingRequests">Requests</a>
-        }
-    </p>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="PendingRequests">Requests</a>
+    }
+</p>
 }
 @if (!User.IsInRole("Admin"))
 {
-    <p>
-        <a asp-action="SendRequest">Requests</a>
-    </p>
+<p>
+    <a asp-action="Aboutme">About me</a> |
+    <a asp-action="SendRequest">Send Requests</a> |
+</p>
     
 }
 <table class="table">

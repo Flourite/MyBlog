@@ -28,24 +28,69 @@
     </dl>
 </div>
 <div>
-    <h4 style="margin-bottom: 10px;">Files(Click to download)</h4>
-    @foreach (var file in Model.Files)
-    {
-        <div style="padding:0px 25px; margin:0px;">
-            @Html.Label(file.Id.ToString()) - - - -
-            <a asp-action="DownloadFile" asp-route-id="@Html.Label(file.Id.ToString())">@Html.Label(file.Name)</a>
-        </div>
-    }
+    <h4 style="margin-bottom: 10px;">Files</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Files.ElementAt(0).Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Files.ElementAt(0).Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Files.ElementAt(0).Path)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Files)
+            {
+                <tr>
+                    <td style="padding: 0.1em;">
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td style="padding: 0.1em;">
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td style="padding: 0.1em;">
+                        @Html.DisplayFor(modelItem => item.Path)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 <div>
     <h4 style="margin-bottom: 10px;">Comments</h4>
-    @foreach (var cmt in Model.Comments)
-    {
-        <div style="padding:0px 25px; margin:0px;">
-            @Html.Label(cmt.CommenterName) -
-            @Html.Label(cmt.Content)
-        </div>
-    }
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments.ElementAt(0).CommenterName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Comments.ElementAt(0).Content)
+                </th>
+           
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Comments)
+            {
+                <tr>
+                    <td style="padding: 0.1em;">
+                        @Html.DisplayFor(modelItem => item.CommenterName)
+                    </td>
+                    <td style="padding: 0.1em;">
+                        @Html.DisplayFor(modelItem => item.Content)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 <div style="height: 10px;"></div>
 <div>

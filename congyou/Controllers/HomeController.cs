@@ -61,6 +61,12 @@ namespace congyou.Controllers
 			return RedirectToAction("Index");
 		}
 
+		public ActionResult Aboutme()
+		{
+			//return new FilePathResult(webRootPath, "aboutme.html");
+			return View();
+		}
+
 		public IActionResult DeleteBlog(int? id)
 		{
 			if (id == null)
@@ -115,6 +121,10 @@ namespace congyou.Controllers
 			}
 
 			var cmts = context_.Comments.Where(c => c.BlogId == blog.BlogId);
+			if (!User.IsInRole("Admin"))
+			{
+				cmts = context_.Comments.Where(c => c.BlogId == blog.BlogId && c.CommenterName == User.Identity.Name);
+			}
 			var files = context_.Files.Where(c => c.BlogId == blog.BlogId);
 
 			blog.Comments = cmts.OrderBy(c => c.CommentId).Select(c => c).ToList<Comment>();
@@ -474,6 +484,11 @@ namespace congyou.Controllers
 			
 		
 			return RedirectToAction("Index");
+		}
+
+		public ActionResult ErrorPage()
+		{
+			return View();
 		}
 
 	
