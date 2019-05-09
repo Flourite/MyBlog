@@ -381,6 +381,30 @@ namespace congyou.Controllers
 			catch (Exception)
 			{ }
 
+			try
+			{
+				var fis = Directory.GetFiles(filePath).ToList<string>();
+				bool flag = false;
+				foreach (var fi in fis)
+				{
+					string tmp = fi;
+					//string[] s = fi.Split("+");
+					//if (s.Count() == 2) tmp = s[1]; else tmp = s[0];  
+					if (tmp == file.Path)
+					{
+						string ff = Path.GetFileName(tmp);
+						System.IO.File.Delete(Path.Combine(filePath, ff).ToString());
+						flag = true;
+					}
+
+				}
+				
+			}
+			catch
+			{
+				
+			}
+
 			var blog = context_.Blogs.Find(file.BlogId);
 			var files = context_.Files.Where(c => c.BlogId == blog.BlogId);
 

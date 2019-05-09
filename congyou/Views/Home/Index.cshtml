@@ -9,7 +9,6 @@
 @if (User.IsInRole("Admin"))
 {
 <p>
-    
     <a href="~/aboutme.html">About me</a> |
     <a asp-action="CreateBlog">Create New Blog</a> |
 
@@ -22,7 +21,7 @@
 @if (!User.IsInRole("Admin"))
 {
 <p>
-    <a asp-action="Aboutme">About me</a> |
+    <a href="~/aboutme.html">About me</a> |
     <a asp-action="SendRequest">Send Requests</a> |
 </p>
     

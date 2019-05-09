@@ -94,6 +94,11 @@
 </div>
 <div style="height: 10px;"></div>
 <div>
-    <a asp-action="EditBlog" asp-route-id="@Model.BlogId">Edit Blog Text</a> |
-    <a asp-action="Index">Back to Blog List</a>
+    <a asp-action="Index"> Back to Blog List </a> |
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="EditBlog" asp-route-id="@Model.BlogId">Edit Blog Text</a>
+
+    }
+
 </div>

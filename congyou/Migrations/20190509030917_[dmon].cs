@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace congyou.Migrations
 {
-    public partial class init : Migration
+    public partial class dmon : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
