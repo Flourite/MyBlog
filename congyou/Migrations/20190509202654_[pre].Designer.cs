@@ -10,8 +10,8 @@ using congyou.Data;
 namespace congyou.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190509030917_[dmon]")]
-    partial class dmon
+    [Migration("20190509202654_[pre]")]
+    partial class pre
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
